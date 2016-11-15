@@ -11,8 +11,8 @@ typedef std::pair<Rectangle, Rectangle> rect_pair;
 class Vector {
 	
 	private:
-		long xCoord;
-		long yCoord;
+		long x_coord;
+		long y_coord;
 	
 	public:
 		Vector(long x, long y);
@@ -28,8 +28,8 @@ class Vector {
 class Position {
 	
 	private:
-		long xCoord;
-		long yCoord;
+		long x_coord;
+		long y_coord;
 	
 	public:
 		Position(long x, long y);
@@ -40,7 +40,7 @@ class Position {
 		Position& operator += (const Vector &vec);
 		
 		Position reflection() const;
-		Position origin();
+		static const Position &origin();
 };
 
 class Rectangle {
@@ -101,7 +101,7 @@ Rectangle operator +(Vector vec, Rectangle rec);
 Rectangles operator +(Rectangles recs, Vector vec);
 Rectangles operator +(Vector vec, Rectangles recs);
 
-Rectangle merge_horizontally(Rectangle rec1, Rectangle rec2);
-Rectangle merge_vertically(Rectangle rec1, Rectangle rec2);
+Rectangle merge_horizontally(const Rectangle &rec1, const Rectangle &rec2);
+Rectangle merge_vertically(const Rectangle &rec1, const Rectangle &rec2);
 
 #endif
