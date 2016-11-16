@@ -1,6 +1,6 @@
 #include <utility>
 #include <vector>
-#include <assert.h>
+#include <cassert>
 
 #ifndef GEOMETRY_H
 #define GEOMETRY_H
@@ -15,12 +15,15 @@ class Vector {
 		long y_coord;
 	
 	public:
+	
+		//Vector(const Vector &other);
+		//Vector(Vector &&other);
 		Vector(long x, long y);
 		
 		long x() const;
 		long y() const;
 		
-		Vector& operator += (const Vector &vec);
+		Vector& operator += (Vector vec);
 		
 		Vector reflection() const;
 };
@@ -40,7 +43,7 @@ class Position {
 		Position& operator += (const Vector &vec);
 		
 		Position reflection() const;
-		static const Position &origin();
+		static const Position origin();
 };
 
 class Rectangle {
@@ -79,8 +82,8 @@ class Rectangles {
 		Rectangles(std::vector<Rectangle> rects);
 		Rectangles();
 		
-		const Rectangle& operator [](unsigned long i) const;
-		long size() const;
+		Rectangle& operator [](size_t i);
+		size_t size() const;
 		
 		Rectangles& operator += (const Vector &vec);
 		
@@ -91,15 +94,17 @@ class Rectangles {
 bool operator ==(const Vector &vec1, const Vector &vec2);
 bool operator ==(const Position &pos1, const Position &pos2);
 bool operator ==(const Rectangle &rect1, const Rectangle &rect2);
-bool operator ==(const Rectangles &recs1, const Rectangles &recs2);
+bool operator ==(Rectangles &recs1, Rectangles &recs2);
 
-Position operator +(Position pos, Vector vec);
-Position operator +(Vector vec, Position pos);
-Vector operator +(Vector vec1, Vector vec2);
-Rectangle operator +(Rectangle rec, Vector vec);
-Rectangle operator +(Vector vec, Rectangle rec);
-Rectangles operator +(Rectangles recs, Vector vec);
-Rectangles operator +(Vector vec, Rectangles recs);
+const Position operator +(Position pos, Vector vec);
+const Position operator +(Vector vec, Position pos);
+const Vector operator +(Vector vec1, Vector vec2);
+const Rectangle operator +(Rectangle rec, Vector vec);
+const Rectangle operator +(Vector vec, Rectangle rec);
+const Rectangles operator +(const Rectangles &recs, Vector vec);
+const Rectangles operator +(Rectangles &&recs, Vector vec);
+const Rectangles operator +(Vector vec, const Rectangles &recs);
+const Rectangles operator +(Vector vec, Rectangles &&recs);
 
 Rectangle merge_horizontally(const Rectangle &rec1, const Rectangle &rec2);
 Rectangle merge_vertically(const Rectangle &rec1, const Rectangle &rec2);

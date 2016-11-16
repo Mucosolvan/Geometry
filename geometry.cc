@@ -1,7 +1,8 @@
 #include <utility>
 #include <vector>
-#include <assert.h>
+#include <cassert>
 #include <iostream>
+#include <algorithm>
 #include "geometry.h"
 // Pamietac o wykonywalnosci pliku ?
 
@@ -15,7 +16,7 @@ long Vector::y() const {
 	return y_coord;
 }
 
-Vector& Vector::operator += (const Vector &vec) {
+Vector& Vector::operator += (Vector vec) {
 	x_coord += vec.x();
 	y_coord += vec.y();
 	return *this;
@@ -45,11 +46,8 @@ Position Position::reflection() const {
 	return Position(y_coord, x_coord);
 }
 
-const Position &origin() {
-	static const int x_static = 0;
-	static const int y_static = 0;
-	static const Position pos_static = Position(x_static, y_static);
-	return pos_static;
+const Position Position::origin() {
+	return Position(0, 0);
 }
 
 //Rectangle
@@ -91,7 +89,7 @@ Rectangle Rectangle::reflection() const {
 }
 
 rect_pair Rectangle::split_horizontally(long place) const {
-	assert (place > position.y() && place < position.y() + h);
+	assert (place > 0 && place < h);
 	Rectangle first = Rectangle(w, place, position);
 	Rectangle second = Rectangle(w, h - place, 
 						position + Vector(0, place));
@@ -99,7 +97,7 @@ rect_pair Rectangle::split_horizontally(long place) const {
 }
 
 rect_pair Rectangle::split_vertically(long place) const {
-	assert (place > position.x() && place < position.x() + w);
+	assert (place > 0 && place < w);
 	Rectangle first = Rectangle(place, h, position);
 	Rectangle second = Rectangle(w - place, h, 
 						position + Vector(place, 0));
@@ -111,18 +109,18 @@ rect_pair Rectangle::split_vertically(long place) const {
 Rectangles::Rectangles(std::vector<Rectangle> rects) : recs(std::move(rects)) {}
 Rectangles::Rectangles() {}
 
-const Rectangle& Rectangles::operator [](unsigned long i) const {
+Rectangle& Rectangles::operator [](size_t i) {
 	assert (i >= 0 && i < recs.size());
-	return (recs[i]);
+	return recs[i];
 }
 
-long Rectangles::size() const {
+size_t Rectangles::size() const {
 	return recs.size();
 }
 
 Rectangles& Rectangles::operator += (const Vector &vec) {
 	for (auto rec : recs) 
-		rec+= vec;
+		rec += vec;
 	return *this;
 }
 
@@ -137,8 +135,8 @@ void Rectangles::split(unsigned long idx, long place, bool horizontally) {
 	assert (idx >= 0 && idx < recs.size());
 	auto it = recs.begin() + idx;
 	auto rec_pair = split_pair(it, place, horizontally);
-	Rectangle arr[] = {rec_pair.first, rec_pair.second};
-	recs.insert(it, arr, arr + 2);
+	*it = rec_pair.second;
+	recs.insert(it, rec_pair.first);
 }
 
 void Rectangles::split_horizontally(unsigned long idx, long place) {
@@ -166,43 +164,57 @@ bool operator ==(const Rectangle &rect1, const Rectangle &rect2) {
 			rect1.pos() == rect2.pos());
 }
 
-bool operator ==(const Rectangles &recs1, const Rectangles &recs2) {
+bool operator ==(Rectangles &recs1, Rectangles &recs2) {
 	bool same = (recs1.size() == recs2.size());
 	if (same) {
-		for (int i = 0; i < recs1.size() && same; i++) {
+		for (size_t i = 0; i < recs1.size() && same; i++) {
 			same &= (recs1[i] == recs2[i]);
 		}
 	}
 	return same;
 }
 
-//Additions
-Position operator +(Position pos, Vector vec) {
+/* Additions
+ * Passing classes containing only constant number of primitive types
+ * is practically the same as passing integers, no need for rvalues 
+ */
+
+const Position operator +(Position pos, Vector vec) {
 	return (pos += vec); 
 }
 
-Position operator +(Vector vec, Position pos) {
+const Position operator +(Vector vec, Position pos) {
 	return (pos += vec);
 }
 
-Vector operator +(Vector vec1, Vector vec2) {
+const Vector operator +(Vector vec1, Vector vec2) {
 	return (vec1 += vec2);
 }
 
-Rectangle operator +(Rectangle rec, Vector vec) {
+const Rectangle operator +(Rectangle rec, Vector vec) {
 	return (rec += vec);
 }
 
-Rectangle operator +(Vector vec, Rectangle rec) {
+const Rectangle operator +(Vector vec, Rectangle rec) {
 	return (rec += vec);
 }
 
-Rectangles operator +(Rectangles recs, Vector vec) {
+const Rectangles operator +(const Rectangles &recs, Vector vec) {
+	Rectangles rec(recs);
+	return (rec += vec);
+}
+
+const Rectangles operator +(Rectangles &&recs, Vector vec) {
 	return (recs += vec);
 }
 
-Rectangles operator +(Vector vec, Rectangles recs) {
+const Rectangles operator +(Vector vec, Rectangles &&recs) {
 	return (recs += vec);
+}
+
+const Rectangles operator +(Vector vec, const Rectangles &recs) {
+	Rectangles rec(recs);
+	return (rec += vec);
 }
 
 //Merges
@@ -221,7 +233,7 @@ Rectangle merge_vertically(const Rectangle &rec1, const Rectangle &rec2) {
 }
 
 int main() {
-	Position p = Position(100, 200);
+	/* Position p = Position(100, 200);
 	//std::cout << p.x();
 	Vector v = Vector(200, 300);
 	//std::cout << " " << ( (p += v) += v).y();
@@ -234,6 +246,36 @@ int main() {
 	std::cout << " " << (r == r2) << "\n";
 	
 	Position dd = Position(d);
-	std::cout << dd.x() << " " << dd.y() << "\n";
+	std::cout << dd.x() << " " << dd.y() << "\n"; */
+	Vector v = Vector(1, 2);
+	Vector p = v;
+	std::cout << (p == v) <<" ";
+	p += v;
+	std::cout << (p == v) <<" ";
+	Vector d = Vector(1, 2);
+	std::cout << (d == v) << " ";
+	
+	std::cout << (d + v == p + Vector(-1,0)) << " ";
+	
+	std::cout << (v.reflection() == Vector(2, 1)) << " ";
+	
+	Position::origin();
+	Rectangle r = Rectangle(2, 3, Position(1, 2));
+	
+	Rectangles rects = Rectangles({r, Rectangle(1, 1, Position(0,0))});
+	rects[0] += v;
+	std::cout << rects[0].pos().x() << " " << rects[0].pos().y() << " ";
+	
+	std::cout << rects[1].pos().x() << " " << rects[1].pos().y() << " ";
+	
+	rects[1] = Rectangle(2, 2, Position(2,2));
+	std::cout << rects[1].pos().x() << " " << rects[1].pos().y() << "\n";
+	Rectangle r2 = Rectangle(5, 3, Position(3, 2));
+	Rectangle z = merge_vertically(r, r2);
+	std::cout << z.pos().x() << " " << z.pos().y() << " " << z.height() << " " << z.width() << "\n";
+	rect_pair para = z.split_vertically(5);
+	std::cout << (para.first == Rectangle(5, 3, Position(1, 2))) << " " << (para.second == Rectangle(2, 3, Position(6,2))) << "\n";
+	
+	(v += v) = v;
 	return 0;
 }
