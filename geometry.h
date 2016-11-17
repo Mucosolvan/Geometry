@@ -1,3 +1,5 @@
+// Bartosz Burny, Marcin Wawerka
+
 #include <utility>
 #include <vector>
 #include <cassert>
@@ -6,25 +8,11 @@
 #ifndef GEOMETRY_H
 #define GEOMETRY_H
 
+class Position;
+class Vector;
 class Rectangle;
+class Rectangles;
 typedef std::pair<Rectangle, Rectangle> rect_pair;
-
-class Vector {
-	
-	private:
-		long x_coord;
-		long y_coord;
-	
-	public:
-		Vector(long x, long y);
-		
-		long x() const;
-		long y() const;
-		
-		Vector& operator +=(Vector vec);
-		
-		Vector reflection() const;
-};
 
 class Position {
 	
@@ -39,9 +27,28 @@ class Position {
 		long y() const;
 		
 		Position& operator +=(const Vector &vec);
+		bool operator ==(const Position& pos2) const;
 		
 		Position reflection() const;
 		static const Position origin();
+};
+
+class Vector {
+	
+	private:
+		long x_coord;
+		long y_coord;
+	
+	public:
+		Vector(long x, long y);
+		
+		long x() const;
+		long y() const;
+		
+		Vector& operator +=(Vector vec);
+		bool operator ==(const Vector& vec2) const;
+		
+		Vector reflection() const;
 };
 
 class Rectangle {
@@ -60,6 +67,7 @@ class Rectangle {
 		Position pos() const;
 		
 		Rectangle& operator +=(const Vector &vec);
+		bool operator ==(const Rectangle& rect2) const;
 		
 		long area() const;
 		Rectangle reflection() const;
@@ -71,7 +79,7 @@ class Rectangle {
 class Rectangles {
 	
 	private:
-		std::vector<Rectangle> recs;
+		std::vector<Rectangle> rect_vec;
 		rect_pair split_pair(std::vector<Rectangle>::iterator it,
 							 long place, bool horizontally) const;
 		void split(size_t idx, long place, bool horizontally);
@@ -84,15 +92,12 @@ class Rectangles {
 		size_t size() const;
 		
 		Rectangles& operator +=(const Vector& vec);
+		bool operator ==(const Rectangles& rects2) const;
 		
 		void split_horizontally(size_t idx, long place);
 		void split_vertically(size_t idx, long place);
+		
 };
-
-bool operator ==(const Vector& vec1, const Vector& vec2);
-bool operator ==(const Position& pos1, const Position& pos2);
-bool operator ==(const Rectangle& rect1, const Rectangle& rect2);
-bool operator ==(Rectangles& recs1, Rectangles& recs2);
 
 const Position operator +(Position pos, Vector vec);
 const Position operator +(Vector vec, Position pos);
